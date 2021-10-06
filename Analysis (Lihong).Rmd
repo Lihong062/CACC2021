@@ -1,0 +1,42 @@
+---
+title: "Analysis (Lihong)"
+author: "Lihong Wang"
+date: "10/5/2021"
+output: pdf_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(echo  =  TRUE,
+                      warning = FALSE, 
+                      message = FALSE)
+```
+
+## Load packages & data
+
+```{r load-packages, message = FALSE}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(ggfortify)
+library(pairwiseCI)
+library(patchwork)
+library(ggplot2)
+library(readr)
+library(reshape2)
+library(readxl)
+```
+
+```{r load tdata, message = FALSE}
+tdata1 <- read_excel("transaction_data_1-12.xlsx")
+tdata2 <- read_excel("transaction_data_13-24.xlsx")
+tdata3 <- read_excel("transaction_data_25-37.xlsx")
+```
+
+```{r merge tdata, message = FALSE}
+tdata <- data.frame(tdata1, tdata2, tdata3)    
+```
+
+```{r load cdata, message = FALSE}
+cdata <- read_excel("convfunnel_data.xlsx")
+```
+
