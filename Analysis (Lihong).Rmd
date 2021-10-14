@@ -33,10 +33,19 @@ tdata3 <- read_excel("transaction_data_25-37.xlsx")
 ```
 
 ```{r merge tdata, message = FALSE}
-tdata <- data.frame(tdata1, tdata2, tdata3)    
+tdata <- data.frame(tdata1, tdata2, tdata3) 
 ```
 
 ```{r load cdata, message = FALSE}
 cdata <- read_excel("convfunnel_data.xlsx")
+```
+
+```{r omit NA, message = FALSE}
+tdata <- na.omit(tdata)
+cdata <- na.omit(cdata)
+```
+
+```{r}
+
 ```
 
