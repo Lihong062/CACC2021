@@ -38,6 +38,8 @@ cdata <- na.omit(cdata)
 ```
 
 ```{r overview, message = FALSE}
+tdata <- sample_n(tdata, 6000)
+
 overview <- ggplot(data = tdata, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
   geom_point()
 overview
@@ -47,6 +49,9 @@ tdata_lowlev <- tdata %>% filter(POS_p_2021 < 10 & POS_d_2021 < 155)
 tdata_highlev <- tdata %>% filter(POS_p_2021 >= 10 | POS_d_2021 >= 155)
 tdata_lowlev <- tdata_lowlev %>% filter(PDP_Word_Count < 155)
 tdata_highlev <- tdata_highlev %>% filter(PDP_Word_Count < 155)
+
+tdata_lowlev <- tdata_lowlev %>%
+  mutate(Sale_Made = ifelse(POS_p_2021 > 0, "Sale", "No Sale"))
 ```
 
 ```{r income ratio, message = FALSE}
@@ -61,6 +66,62 @@ density_dollars <- density(tdata_lowlev$POS_d_2021)
 plot(density_word)
 plot(density_dollars)
 ```
+```{r more analysis, message = FALSE}
+t1<- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Offered)) + 
+  geom_histogram()
+t2 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Offered)) + 
+  geom_histogram()
+t3 <- ggplot(data = tdata_lowlev, aes(x = desc_periods_)) + 
+  geom_histogram()
+t4 <- ggplot(data = tdata_lowlev, aes(x = material_semicolons_)) + 
+  geom_histogram()
+
+(t1+t2)/(t3+t4)
+```
+
+```{r obvious, message = FALSE}
+t5 <- ggplot(data = tdata, aes(x = POS_p_2021, y = POS_d_2021)) + 
+  geom_point()
+t6 <- ggplot(data = tdata, aes(x = Num_SKUs_Purchased, y = POS_d_2021)) + 
+  geom_point() 
+t7 <- ggplot(data = tdata, aes(x = Num_Colors_Purchased, y = POS_d_2021)) + 
+  geom_point() 
+t8 <- ggplot(data = tdata, aes(x = Num_Sizes_Purchased, y = POS_d_2021)) + 
+  geom_point() 
+
+(t5+t6)/(t7+t8)
+```
+
+```{r}
+t9 <- ggplot(data = tdata_lowlev, aes(x = Num_SKUs_Purchased)) + 
+  geom_histogram()
+t10 <- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Purchased)) + 
+  geom_histogram()
+t11 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Purchased)) + 
+  geom_histogram()
+
+t9+t10+t11
+```
+
+
+```{r some analysis, message = FALSE}
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = CATEGORY_DESC)) +
+  geom_density(alpha = 0.5) 
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PRODUCT_GROUP_DESC)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PRODUCT_LINE_DESC)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = SILHOUETTE)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = STYLE_GROUP)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PDP_Gender)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PDP_Collection)) +
+  geom_density(alpha = 0.5)
+```
+
+
 ```{r some analysis, message = FALSE}
 p3 <- ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = CATEGORY_DESC)) +
   geom_density(alpha = 0.5) 
@@ -73,6 +134,7 @@ p6 <- ggplot(data = tdata_lowlev, aes(x = PDP_Word_Count, fill = PDP_Gender)) +
 
 (p3 + p4)/(p5 + p6)
 ```
+
 ```{r}
 Word_anova <- aov(PDP_Word_Count ~ PDP_Gender, data = tdata_lowlev)
 tidy(Word_anova)
@@ -80,6 +142,7 @@ tidy(Word_anova)
 pairwiseCI(PDP_Word_Count ~ PDP_Gender, data = tdata_lowlev, 
            conf.level = 0.99, var.equal = TRUE)
 ```
+
 ```{r}
 Sales_anova <- aov(POS_d_2021 ~ PDP_Gender, data = tdata_lowlev)
 tidy(Sales_anova)
@@ -87,31 +150,62 @@ tidy(Sales_anova)
 pairwiseCI(POS_d_2021 ~ PDP_Gender, data = tdata_lowlev, 
            conf.level = 0.99, var.equal = TRUE)
 ```
+
 ```{r}
 ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = Case_F3W)) +
   geom_density(alpha = 0.5) 
 
-
-# tdata_Women <- tdata_lowlev %>% filter(PDP_Gender == "Women")
 ```
 
-
+```{r}
+ggplot(data = tdata_lowlev, aes(x = PDP_Word_Count, fill = Sale_Made)) + 
+  geom_density(alpha = 0.5) 
+```
 
 ```{r more analysis, message = FALSE}
-p7 <- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Offered)) + 
-  geom_histogram()
-p8 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Offered)) + 
-  geom_histogram()
-p9 <- ggplot(data = tdata_lowlev, aes(x = desc_periods_)) + 
-  geom_histogram()
-p10 <- ggplot(data = tdata_lowlev, aes(x = material_semicolons_)) + 
-  geom_histogram()
-
+p7 <- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Offered, fill = Sale_Made)) + 
+  geom_density(alpha = 0.5) 
+p8 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Offered, fill = Sale_Made)) + 
+  geom_density(alpha = 0.5) 
+p9 <- ggplot(data = tdata_lowlev, aes(x = desc_periods_, fill = Sale_Made)) + 
+  geom_density(alpha = 0.5) 
+p10 <- ggplot(data = tdata_lowlev, aes(x = material_semicolons_, fill = Sale_Made)) + 
+  geom_density(alpha = 0.5) 
 (p7+p8)/(p9+p10)
 ```
 
+```{r seperation, message = FALSE}
+tdata_Women <- tdata_lowlev %>% filter(PDP_Gender == "Women")
+tdata_Kids <- tdata_lowlev %>% filter(PDP_Gender == "Kids")
+tdata_Men <- tdata_lowlev %>% filter(PDP_Gender == "Men")
+tdata_Unisex <- tdata_lowlev %>% filter(PDP_Gender == "Unisex")
+tdata_Girls <- tdata_lowlev %>% filter(PDP_Gender == "Girls")
+```
 
-```{r transformations, message = FALSE}
-tdata_lowlev <- tdata_lowlev %>%
-  mutate(Squre_PDP_Word_Count = (PDP_Word_Count)^2)
+```{r}
+overview_Women <- ggplot(data = tdata_Women, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
+  geom_point()
+overview_Kids <- ggplot(data = tdata_Kids, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
+  geom_point()
+overview_Men <- ggplot(data = tdata_Men, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
+  geom_point()
+overview_Unisex <- ggplot(data = tdata_Unisex, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
+  geom_point()
+overview_Girls <- ggplot(data = tdata_Girls, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
+  geom_point()
+
+overview_Women  + overview_Men
+overview_Unisex + overview_Girls + overview_Kids
+```
+
+```{r}
+tdata_sold <- tdata_lowlev %>% filter(POS_d_2021 > 0)
+tdata_notsold <- tdata_lowlev %>% filter(POS_d_2021 == 0)
+
+nrow(tdata_sold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40)))
+
+nrow(tdata_sold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80)))
+
+nrow(tdata_sold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120)))
+
 ```
