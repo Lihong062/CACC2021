@@ -38,8 +38,7 @@ cdata <- na.omit(cdata)
 ```
 
 ```{r overview, message = FALSE}
-tdata <- sample_n(tdata, 6000)
-
+#tdata <- sample_n(tdata, 10000)
 overview <- ggplot(data = tdata, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
   geom_point()
 overview
@@ -59,14 +58,14 @@ lowlev_sales <- sum(tdata_lowlev$POS_d_2021)
 highlev_sales <- sum(tdata_highlev$POS_d_2021)
 (highlev_sales/(lowlev_sales+highlev_sales))*100
 ```
-```{r distributions, messages = FALSE}
+```{r main distributions, messages = FALSE}
 density_word <- density(tdata_lowlev$PDP_Word_Count)
 density_dollars <- density(tdata_lowlev$POS_d_2021)
 
 plot(density_word)
 plot(density_dollars)
 ```
-```{r more analysis, message = FALSE}
+```{r distribution of PDP chars, message = FALSE}
 t1<- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Offered)) + 
   geom_histogram()
 t2 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Offered)) + 
@@ -92,7 +91,7 @@ t8 <- ggplot(data = tdata, aes(x = Num_Sizes_Purchased, y = POS_d_2021)) +
 (t5+t6)/(t7+t8)
 ```
 
-```{r}
+```{r distribution of response associates}
 t9 <- ggplot(data = tdata_lowlev, aes(x = Num_SKUs_Purchased)) + 
   geom_histogram()
 t10 <- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Purchased)) + 
@@ -104,10 +103,10 @@ t9+t10+t11
 ```
 
 
-```{r some analysis, message = FALSE}
+```{r categorization, message = FALSE}
 ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = CATEGORY_DESC)) +
   geom_density(alpha = 0.5) 
-ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PRODUCT_GROUP_DESC)) +
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = Google_Product_Category)) +
   geom_density(alpha = 0.5)
 ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PRODUCT_LINE_DESC)) +
   geom_density(alpha = 0.5)
@@ -122,7 +121,7 @@ ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PDP_Collection)) +
 ```
 
 
-```{r some analysis, message = FALSE}
+```{r useful categorizations, message = FALSE}
 p3 <- ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = CATEGORY_DESC)) +
   geom_density(alpha = 0.5) 
 p4 <- ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PDP_Gender)) +
@@ -135,7 +134,7 @@ p6 <- ggplot(data = tdata_lowlev, aes(x = PDP_Word_Count, fill = PDP_Gender)) +
 (p3 + p4)/(p5 + p6)
 ```
 
-```{r}
+```{r WORD ANOVA}
 Word_anova <- aov(PDP_Word_Count ~ PDP_Gender, data = tdata_lowlev)
 tidy(Word_anova)
 # 1-(0.05/5) = 0.99 Bonferroni correction
@@ -143,7 +142,7 @@ pairwiseCI(PDP_Word_Count ~ PDP_Gender, data = tdata_lowlev,
            conf.level = 0.99, var.equal = TRUE)
 ```
 
-```{r}
+```{r SALES ANOVA}
 Sales_anova <- aov(POS_d_2021 ~ PDP_Gender, data = tdata_lowlev)
 tidy(Sales_anova)
 # 1-(0.05/5) = 0.99 Bonferroni correction
@@ -151,18 +150,15 @@ pairwiseCI(POS_d_2021 ~ PDP_Gender, data = tdata_lowlev,
            conf.level = 0.99, var.equal = TRUE)
 ```
 
-```{r}
+```{r Capitalization}
 ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = Case_F3W)) +
   geom_density(alpha = 0.5) 
-
-```
-
-```{r}
 ggplot(data = tdata_lowlev, aes(x = PDP_Word_Count, fill = Sale_Made)) + 
   geom_density(alpha = 0.5) 
 ```
 
-```{r more analysis, message = FALSE}
+
+```{r sales vs no sales, message = FALSE}
 p7 <- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Offered, fill = Sale_Made)) + 
   geom_density(alpha = 0.5) 
 p8 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Offered, fill = Sale_Made)) + 
@@ -174,7 +170,19 @@ p10 <- ggplot(data = tdata_lowlev, aes(x = material_semicolons_, fill = Sale_Mad
 (p7+p8)/(p9+p10)
 ```
 
-```{r seperation, message = FALSE}
+```{r word count and sales ratio by interval}
+tdata_sold <- tdata_lowlev %>% filter(POS_d_2021 > 0)
+tdata_notsold <- tdata_lowlev %>% filter(POS_d_2021 == 0)
+
+nrow(tdata_sold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40)))
+
+nrow(tdata_sold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80)))
+
+nrow(tdata_sold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120)))
+
+```
+
+```{r seperation by gender, message = FALSE}
 tdata_Women <- tdata_lowlev %>% filter(PDP_Gender == "Women")
 tdata_Kids <- tdata_lowlev %>% filter(PDP_Gender == "Kids")
 tdata_Men <- tdata_lowlev %>% filter(PDP_Gender == "Men")
@@ -182,7 +190,7 @@ tdata_Unisex <- tdata_lowlev %>% filter(PDP_Gender == "Unisex")
 tdata_Girls <- tdata_lowlev %>% filter(PDP_Gender == "Girls")
 ```
 
-```{r}
+```{r overviews by gender}
 overview_Women <- ggplot(data = tdata_Women, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
   geom_point()
 overview_Kids <- ggplot(data = tdata_Kids, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
@@ -198,14 +206,17 @@ overview_Women  + overview_Men
 overview_Unisex + overview_Girls + overview_Kids
 ```
 
-```{r}
-tdata_sold <- tdata_lowlev %>% filter(POS_d_2021 > 0)
-tdata_notsold <- tdata_lowlev %>% filter(POS_d_2021 == 0)
-
-nrow(tdata_sold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 0 & PDP_Word_Count < 40)))
-
-nrow(tdata_sold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 40 & PDP_Word_Count < 80)))
-
-nrow(tdata_sold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120))/(nrow(tdata_sold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120)) +nrow(tdata_notsold %>% filter(PDP_Word_Count > 80 & PDP_Word_Count < 120)))
-
+```{r categorization for men}
+ggplot(data = tdata_Men, aes(x = POS_d_2021, fill = CATEGORY_DESC)) +
+  geom_density(alpha = 0.5) 
+ggplot(data = tdata_Men, aes(x = POS_d_2021, fill = Google_Product_Category)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_Men, aes(x = POS_d_2021, fill = PRODUCT_LINE_DESC)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_Men, aes(x = POS_d_2021, fill = SILHOUETTE)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_Men, aes(x = POS_d_2021, fill = STYLE_GROUP)) +
+  geom_density(alpha = 0.5)
+ggplot(data = tdata_Men, aes(x = POS_d_2021, fill = PDP_Collection)) +
+  geom_density(alpha = 0.5) 
 ```
