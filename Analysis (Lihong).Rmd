@@ -26,26 +26,92 @@ library(reshape2)
 library(readxl)
 ```
 
-```{r load tdata, message = FALSE}
+```{r load data, message = FALSE}
 tdata1 <- read_excel("transaction_data_1-12.xlsx")
 tdata2 <- read_excel("transaction_data_13-24.xlsx")
 tdata3 <- read_excel("transaction_data_25-37.xlsx")
-```
-
-```{r merge tdata, message = FALSE}
-tdata <- data.frame(tdata1, tdata2, tdata3) 
-```
-
-```{r load cdata, message = FALSE}
+tdata4 <- read_excel("transaction_data_append.xlsx")
+tdata <- data.frame(tdata1, tdata2, tdata3, tdata4) 
 cdata <- read_excel("convfunnel_data.xlsx")
-```
-
-```{r omit NA, message = FALSE}
 tdata <- na.omit(tdata)
 cdata <- na.omit(cdata)
 ```
 
-```{r}
-
+```{r overview, message = FALSE}
+overview <- ggplot(data = tdata, aes(x = PDP_Word_Count, y = POS_d_2021)) + 
+  geom_point()
+overview
+```
+```{r split, message = FALSE}
+tdata_lowlev <- tdata %>% filter(POS_p_2021 < 10 & POS_d_2021 < 155)
+tdata_highlev <- tdata %>% filter(POS_p_2021 >= 10 | POS_d_2021 >= 155)
+tdata_lowlev <- tdata_lowlev %>% filter(PDP_Word_Count < 155)
+tdata_highlev <- tdata_highlev %>% filter(PDP_Word_Count < 155)
 ```
 
+```{r income ratio, message = FALSE}
+lowlev_sales <- sum(tdata_lowlev$POS_d_2021)
+highlev_sales <- sum(tdata_highlev$POS_d_2021)
+(highlev_sales/(lowlev_sales+highlev_sales))*100
+```
+```{r distributions, messages = FALSE}
+density_word <- density(tdata_lowlev$PDP_Word_Count)
+density_dollars <- density(tdata_lowlev$POS_d_2021)
+
+plot(density_word)
+plot(density_dollars)
+```
+```{r some analysis, message = FALSE}
+p3 <- ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = CATEGORY_DESC)) +
+  geom_density(alpha = 0.5) 
+p4 <- ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = PDP_Gender)) +
+  geom_density(alpha = 0.5) 
+p5 <- ggplot(data = tdata_lowlev, aes(x = PDP_Word_Count, fill = CATEGORY_DESC)) + 
+  geom_density(alpha = 0.5) 
+p6 <- ggplot(data = tdata_lowlev, aes(x = PDP_Word_Count, fill = PDP_Gender)) + 
+  geom_density(alpha = 0.5) 
+
+(p3 + p4)/(p5 + p6)
+```
+```{r}
+Word_anova <- aov(PDP_Word_Count ~ PDP_Gender, data = tdata_lowlev)
+tidy(Word_anova)
+# 1-(0.05/5) = 0.99 Bonferroni correction
+pairwiseCI(PDP_Word_Count ~ PDP_Gender, data = tdata_lowlev, 
+           conf.level = 0.99, var.equal = TRUE)
+```
+```{r}
+Sales_anova <- aov(POS_d_2021 ~ PDP_Gender, data = tdata_lowlev)
+tidy(Sales_anova)
+# 1-(0.05/5) = 0.99 Bonferroni correction
+pairwiseCI(POS_d_2021 ~ PDP_Gender, data = tdata_lowlev, 
+           conf.level = 0.99, var.equal = TRUE)
+```
+```{r}
+ggplot(data = tdata_lowlev, aes(x = POS_d_2021, fill = Case_F3W)) +
+  geom_density(alpha = 0.5) 
+
+
+# tdata_Women <- tdata_lowlev %>% filter(PDP_Gender == "Women")
+```
+
+
+
+```{r more analysis, message = FALSE}
+p7 <- ggplot(data = tdata_lowlev, aes(x = Num_Colors_Offered)) + 
+  geom_histogram()
+p8 <- ggplot(data = tdata_lowlev, aes(x = Num_Sizes_Offered)) + 
+  geom_histogram()
+p9 <- ggplot(data = tdata_lowlev, aes(x = desc_periods_)) + 
+  geom_histogram()
+p10 <- ggplot(data = tdata_lowlev, aes(x = material_semicolons_)) + 
+  geom_histogram()
+
+(p7+p8)/(p9+p10)
+```
+
+
+```{r transformations, message = FALSE}
+tdata_lowlev <- tdata_lowlev %>%
+  mutate(Squre_PDP_Word_Count = (PDP_Word_Count)^2)
+```
